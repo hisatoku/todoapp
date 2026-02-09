@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.todo.repository.TodoMapper">
+    <resultMap id="TodoMap" type="com.example.todo.entity.Todo">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="detail" column="detail"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="dueDate" column="due_date"/>
+        <result property="priority" column="priority" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="completedAt" column="completed_at"/>
+    </resultMap>
+
+    <sql id="BaseSelect">
+        SELECT id, title, detail, created_by, created_at, due_date, priority, status, completed_at
+        FROM todos
+    </sql>
+
+    <sql id="SearchFilter">
+        <if test="q != null and q != ''">
+            AND (title LIKE CONCAT('%', #{q}, '%')
+               OR detail LIKE CONCAT('%', #{q}, '%'))
+        </if>
+    </sql>
+
+    <sql id="SortOrder">
+        <choose>
+            <when test="sort == 'priority'">ORDER BY priority</when>
+            <when test="sort == 'createdBy'">ORDER BY created_by</when>
+            <when test="sort == 'createdAt'">ORDER BY created_at</when>
+            <when test="sort == 'dueDate'">ORDER BY due_date</when>
+            <when test="sort == 'title'">ORDER BY title</when>
+            <when test="sort == 'status'">ORDER BY status</when>
+            <when test="sort == 'completedAt'">ORDER BY completed_at</when>
+            <otherwise>ORDER BY created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="dir == 'asc'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+    </sql>
+
+    <select id="selectTodos" resultMap="TodoMap">
+        <include refid="BaseSelect"/>
+        <if test="q != null and q != ''">
+            WHERE title LIKE CONCAT('%', #{q}, '%')
+               OR detail LIKE CONCAT('%', #{q}, '%')
+        </if>
+        <include refid="SortOrder"/>
+    </select>
+
+    <select id="selectActiveTodosPaged" resultMap="TodoMap">
+        <include refid="BaseSelect"/>
+        WHERE status &lt;&gt; 'COMPLETED'
+        <include refid="SearchFilter"/>
+        <include refid="SortOrder"/>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countActiveTodos" resultType="long">
+        SELECT COUNT(*)
+        FROM todos
+        WHERE status &lt;&gt; 'COMPLETED'
+        <include refid="SearchFilter"/>
+    </select>
+
+    <select id="selectCompletedLatest" resultMap="TodoMap">
+        <include refid="BaseSelect"/>
+        WHERE status = 'COMPLETED'
+        <include refid="SearchFilter"/>
+        ORDER BY completed_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectById" resultMap="TodoMap">
+        <include refid="BaseSelect"/>
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.todo.entity.Todo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO todos (title, detail, created_by, created_at, due_date, priority, status, completed_at)
+        VALUES (#{title}, #{detail}, #{createdBy}, #{createdAt}, #{dueDate}, #{priority}, #{status}, #{completedAt})
+    </insert>
+
+    <update id="update" parameterType="com.example.todo.entity.Todo">
+        UPDATE todos
+        SET title = #{title},
+            detail = #{detail},
+            created_by = #{createdBy},
+            due_date = #{dueDate},
+            priority = #{priority},
+            status = #{status},
+            completed_at = #{completedAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE todos
+        SET status = #{status}, completed_at = #{completedAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePriority">
+        UPDATE todos
+        SET priority = #{priority}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM todos WHERE id = #{id}
+    </delete>
+</mapper>

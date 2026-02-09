@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ToDo完了</title>
+    <style>
+        body { font-family: "Yu Gothic", "Meiryo", sans-serif; padding: 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 10px; border: 1px solid #ccc; }
+        th { width: 180px; background: #f5f5f5; text-align: left; }
+        .actions { margin-top: 16px; }
+        .btn { padding: 6px 14px; border: 1px solid #666; background: #fff; cursor: pointer; }
+    </style>
+</head>
+<body>
+<h1>ToDo完了</h1>
+<p>上記で登録しました。</p>
+
+<table>
+    <tr><th>登録者</th><td th:text="${todo.createdBy}"></td></tr>
+    <tr><th>タイトル</th><td th:text="${todo.title}"></td></tr>
+    <tr><th>詳細</th><td th:text="${todo.detail}"></td></tr>
+    <tr>
+        <th>締切日</th>
+        <td>
+            <span th:if="${todo.dueDate != null}" th:text="${todo.dueDate}"></span>
+            <span th:if="${todo.dueDate == null}">期限なし</span>
+        </td>
+    </tr>
+    <tr><th>ステータス</th><td th:text="${todo.status.label}"></td></tr>
+    <tr><th>優先度</th><td th:text="${todo.priority.label}"></td></tr>
+</table>
+
+<div class="actions">
+    <a class="btn" th:href="@{/todos}">一覧へ</a>
+</div>
+</body>
+</html>

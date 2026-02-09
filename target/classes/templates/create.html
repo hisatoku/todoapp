@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ToDo登録</title>
+    <style>
+        body { font-family: "Yu Gothic", "Meiryo", sans-serif; padding: 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 10px; border: 1px solid #ccc; }
+        th { width: 180px; background: #f5f5f5; text-align: left; }
+        .actions { margin-top: 16px; display: flex; gap: 10px; }
+        .error { color: #d9534f; font-size: 12px; }
+        .btn { padding: 6px 14px; border: 1px solid #666; background: #fff; cursor: pointer; }
+    </style>
+</head>
+<body>
+<h1 th:text="${isEdit} ? 'ToDo編集' : 'ToDo登録'"></h1>
+
+<form th:action="${isEdit} ? @{/todos/{id}/update(id=${todo.id})} : @{/todos/confirm}"
+      th:object="${todo}" method="post">
+    <table>
+        <tr>
+            <th>登録者</th>
+            <td>
+                <input type="text" th:field="*{author}">
+                <div class="error" th:if="${#fields.hasErrors('author')}" th:errors="*{author}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>タイトル</th>
+            <td>
+                <input type="text" th:field="*{title}">
+                <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>詳細</th>
+            <td>
+                <textarea th:field="*{detail}" rows="4" cols="40"></textarea>
+                <div class="error" th:if="${#fields.hasErrors('detail')}" th:errors="*{detail}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>締切日</th>
+            <td>
+                <input type="date" id="dueDateInput" th:field="*{dueDate}">
+                <label>
+                    <input type="checkbox" id="noDueDate" th:field="*{noDueDate}">
+                    期限なし
+                </label>
+                <div class="error" th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>ステータス</th>
+            <td>
+                <select th:field="*{status}">
+                    <option th:each="s : ${statuses}" th:value="${s}">[[${s.label}]]</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>優先度</th>
+            <td>
+                <select th:field="*{priority}">
+                    <option th:each="p : ${priorities}" th:value="${p}">[[${p.label}]]</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+
+    <div class="actions">
+        <button class="btn" type="submit" th:text="${isEdit} ? '更新' : '確認'"></button>
+        <a class="btn" th:href="@{/todos}">戻る</a>
+    </div>
+</form>
+
+<script>
+    const dueDateInput = document.getElementById("dueDateInput");
+    const noDueDate = document.getElementById("noDueDate");
+    const syncDueDate = () => {
+        if (noDueDate.checked) {
+            dueDateInput.value = "";
+            dueDateInput.disabled = true;
+        } else {
+            dueDateInput.disabled = false;
+        }
+    };
+    noDueDate.addEventListener("change", syncDueDate);
+    syncDueDate();
+</script>
+</body>
+</html>
